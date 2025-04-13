@@ -1,14 +1,15 @@
-print("SwebScript Rivals loaded successfully!")
+print("SwebScript: Rage Menu loaded successfully!")
 
 -- Variables
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
 
 -- GUI Setup
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "SwebScriptRivals"
+ScreenGui.Name = "SwebScriptRage"
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.ResetOnSpawn = false
@@ -19,7 +20,7 @@ MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.BorderSizePixel = 0
 MainFrame.Position = UDim2.new(0, 10, 0.4, 0)
-MainFrame.Size = UDim2.new(0, 200, 0, 300)
+MainFrame.Size = UDim2.new(0, 200, 0, 400)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
@@ -34,7 +35,7 @@ Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 0, 0, 10)
 Title.Size = UDim2.new(1, 0, 0, 30)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "SwebScript Rivals"
+Title.Text = "SwebScript Rage"
 Title.TextColor3 = Color3.fromRGB(255, 0, 4)
 Title.TextSize = 18
 
@@ -59,119 +60,13 @@ CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- ESP Box Setup
+-- Rage Features
 local espEnabled = false
-local espObjects = {}
-
-local function toggleESP()
-    espEnabled = not espEnabled
-    for _, obj in pairs(espObjects) do
-        if obj and obj.Parent then
-            obj:Destroy()
-        end
-    end
-    espObjects = {}
-
-    if espEnabled then
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
-                local function createESP(character)
-                    if character and character:FindFirstChild("HumanoidRootPart") then
-                        local box = Instance.new("BillboardGui")
-                        box.Adornee = character.HumanoidRootPart
-                        box.Size = UDim2.new(0, 100, 0, 100)
-                        box.AlwaysOnTop = true
-                        box.Parent = character
-
-                        local frame = Instance.new("Frame")
-                        frame.Size = UDim2.new(1, 0, 1, 0)
-                        frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-                        frame.BorderSizePixel = 0
-                        frame.Parent = box
-
-                        table.insert(espObjects, box)
-                    end
-                end
-
-                if player.Character then
-                    createESP(player.Character)
-                end
-
-                player.CharacterAdded:Connect(function(character)
-                    if espEnabled then
-                        createESP(character)
-                    end
-                end)
-            end
-        end
-
-        Players.PlayerAdded:Connect(function(player)
-            player.CharacterAdded:Connect(function(character)
-                if espEnabled then
-                    createESP(character)
-                end
-            end)
-        end)
-    end
-end
-
--- Aimbot Setup
 local aimbotEnabled = false
-local aimbotTarget = nil
-local aimbotPart = "Head" -- Target part (Head or HumanoidRootPart)
-local aimbotDistance = 150 -- Maximum distance for aimbot
+local speedhackEnabled = false
+local triggerbotEnabled = false
+local noRecoilEnabled = false
 
-local function getClosestPlayer()
-    local closestPlayer = nil
-    local shortestDistance = aimbotDistance
-
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild(aimbotPart) then
-            local pos = player.Character[aimbotPart].Position
-            local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(pos)
-
-            if onScreen then
-                local distance = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y)).Magnitude
-                if distance < shortestDistance then
-                    shortestDistance = distance
-                    closestPlayer = player
-                end
-            end
-        end
-    end
-
-    return closestPlayer
-end
-
-local function aimbot()
-    if aimbotEnabled and aimbotTarget and aimbotTarget.Character then
-        local part = aimbotTarget.Character:FindFirstChild(aimbotPart)
-        if part then
-            local pos = part.Position
-            local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(pos)
-            if onScreen then
-                mousemoverel((screenPos.X - LocalPlayer:GetMouse().X), (screenPos.Y - LocalPlayer:GetMouse().Y))
-            end
-        end
-    end
-end
-
-local function toggleAimbot()
-    aimbotEnabled = not aimbotEnabled
-
-    if aimbotEnabled then
-        RunService:BindToRenderStep("Aimbot", 1, function()
-            aimbotTarget = getClosestPlayer()
-            if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then -- Right-click
-                aimbot()
-            end
-        end)
-    else
-        RunService:UnbindFromRenderStep("Aimbot")
-    end
-end
-
--- Create Buttons
 local function createButton(name, position, callback)
     local button = Instance.new("TextButton")
     button.Name = name
@@ -194,27 +89,139 @@ local function createButton(name, position, callback)
     return button
 end
 
+-- Rage Features Handlers
+local function toggleESP()
+    espEnabled = not espEnabled
+    -- Simple ESP: Draw box around players
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                local espBox = Instance.new("Frame")
+                espBox.Size = UDim2.new(0, 100, 0, 100)
+                espBox.Position = UDim2.new(0, -50, 0, -50)
+                espBox.BackgroundTransparency = 1
+                espBox.BorderColor3 = Color3.fromRGB(255, 0, 0)
+                espBox.BorderSizePixel = 2
+                espBox.Parent = player.Character.HumanoidRootPart
+
+                -- Adding box outline to player
+                local top = Instance.new("Frame")
+                top.Size = UDim2.new(1, 0, 0, 2)
+                top.Position = UDim2.new(0, 0, 0, -50)
+                top.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                top.Parent = espBox
+
+                local bottom = Instance.new("Frame")
+                bottom.Size = UDim2.new(1, 0, 0, 2)
+                bottom.Position = UDim2.new(0, 0, 1, 50)
+                bottom.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                bottom.Parent = espBox
+
+                local left = Instance.new("Frame")
+                left.Size = UDim2.new(0, 2, 1, 0)
+                left.Position = UDim2.new(0, -50, 0, 0)
+                left.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                left.Parent = espBox
+
+                local right = Instance.new("Frame")
+                right.Size = UDim2.new(0, 2, 1, 0)
+                right.Position = UDim2.new(1, 50, 0, 0)
+                right.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                right.Parent = espBox
+            end
+        end
+    end
+end
+
+local function toggleAimbot()
+    aimbotEnabled = not aimbotEnabled
+    if aimbotEnabled then
+        RunService:BindToRenderStep("Aimbot", 1, function()
+            -- Rage Aimbot: Lock onto nearest player and instantly shoot
+            local closestPlayer = nil
+            local closestDist = math.huge
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+                    local charPos = player.Character.Head.Position
+                    local screenPos = Camera:WorldToScreenPoint(charPos)
+                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y)).Magnitude
+                    if dist < closestDist then
+                        closestDist = dist
+                        closestPlayer = player
+                    end
+                end
+            end
+            if closestPlayer then
+                local targetPart = closestPlayer.Character:FindFirstChild("Head")
+                if targetPart then
+                    local screenPos = Camera:WorldToScreenPoint(targetPart.Position)
+                    local mouseX, mouseY = LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y
+                    mousemoverel(screenPos.X - mouseX, screenPos.Y - mouseY)
+                    -- Simulate a click (triggerbot)
+                    if triggerbotEnabled then
+                        local click = Instance.new("InputObject")
+                        click.UserInputType = Enum.UserInputType.MouseButton1
+                        game:GetService("UserInputService").InputBegan:Fire(click)
+                    end
+                end
+            end
+        end)
+    else
+        RunService:UnbindFromRenderStep("Aimbot")
+    end
+end
+
+local function toggleSpeedhack()
+    speedhackEnabled = not speedhackEnabled
+    if speedhackEnabled then
+        -- Set walk speed to 100 (or higher)
+        LocalPlayer.Character.Humanoid.WalkSpeed = 100
+    else
+        -- Reset to default walk speed
+        LocalPlayer.Character.Humanoid.WalkSpeed = 16
+    end
+end
+
+local function toggleTriggerbot()
+    triggerbotEnabled = not triggerbotEnabled
+end
+
+local function toggleNoRecoil()
+    noRecoilEnabled = not noRecoilEnabled
+    if noRecoilEnabled then
+        -- Set custom camera field of view or disable gun recoil (not the actual Roblox way, but a simulation)
+        -- You can add a custom method to simulate no recoil by modifying the camera angle
+        Camera.FieldOfView = 120
+    else
+        Camera.FieldOfView = 70
+    end
+end
+
+-- Create Buttons for Rage Features
 createButton("ESP", UDim2.new(0.5, 0, 0, 50), toggleESP)
 createButton("Aimbot", UDim2.new(0.5, 0, 0, 90), toggleAimbot)
+createButton("Speedhack", UDim2.new(0.5, 0, 0, 130), toggleSpeedhack)
+createButton("Triggerbot", UDim2.new(0.5, 0, 0, 170), toggleTriggerbot)
+createButton("No Recoil", UDim2.new(0.5, 0, 0, 210), toggleNoRecoil)
 
 -- Status label
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Name = "StatusLabel"
 StatusLabel.Parent = MainFrame
 StatusLabel.BackgroundTransparency = 1
-StatusLabel.Position = UDim2.new(0, 0, 0, 250)
+StatusLabel.Position = UDim2.new(0, 0, 0, 350)
 StatusLabel.Size = UDim2.new(1, 0, 0, 30)
 StatusLabel.Font = Enum.Font.Gotham
-StatusLabel.Text = "SwebScript v1.0"
+StatusLabel.Text = "SwebScript v1.0 - Rage Mode"
 StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 StatusLabel.TextSize = 12
 
 -- Notification that script has loaded
 game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "SwebScript Rivals",
-    Text = "Cheat menu loaded successfully!",
+    Title = "SwebScript Rage",
+    Text = "Rage cheat menu loaded successfully!",
     Duration = 5
 })
 
 -- Return success message
-return "SwebScript Rivals loaded successfully!"
+return "SwebScript Rage Cheat Menu loaded successfully!"
