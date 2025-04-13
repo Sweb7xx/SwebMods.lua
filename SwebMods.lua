@@ -1,4 +1,6 @@
--- Initialize the GUI
+-- SwebMods.lua (hosted at https://raw.githubusercontent.com/Sweb7xx/SwebMods.lua/main/SwebMods.lua)
+
+-- Create UI
 local screenGui = Instance.new("ScreenGui")
 local frame = Instance.new("Frame")
 local aimbotButton = Instance.new("TextButton")
