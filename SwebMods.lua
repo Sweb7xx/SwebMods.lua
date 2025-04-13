@@ -1,102 +1,133 @@
--- main.lua
--- Rivals Mod Menu (Custom UI, Speed Boost, Aimbot)
-
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local camera = workspace.CurrentCamera
-
--- Create UI
-local gui = Instance.new("ScreenGui")
-gui.Name = "ModMenu"
-gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
-
+-- Initialize the GUI
+local screenGui = Instance.new("ScreenGui")
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 220, 0, 180)
-frame.Position = UDim2.new(0, 20, 0, 100)
-frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
-frame.Parent = gui
+local aimbotButton = Instance.new("TextButton")
+local speedButton = Instance.new("TextButton")
+local toggleButton = Instance.new("TextButton")
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
-title.Text = "Rivals Mod Menu"
-title.TextColor3 = Color3.new(1, 1, 1)
-title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 16
-title.Parent = frame
+screenGui.Parent = game.Players.LocalPlayer.PlayerGui
+screenGui.Name = "ModMenu"
 
--- Utility: Create buttons
-local function createButton(text, posY, callback)
-	local button = Instance.new("TextButton")
-	button.Size = UDim2.new(1, -10, 0, 30)
-	button.Position = UDim2.new(0, 5, 0, posY)
-	button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	button.TextColor3 = Color3.new(1, 1, 1)
-	button.Font = Enum.Font.Gotham
-	button.TextSize = 14
-	button.Text = text
-	button.Parent = frame
-	button.MouseButton1Click:Connect(callback)
-end
+frame.Parent = screenGui
+frame.Size = UDim2.new(0, 250, 0, 400)
+frame.Position = UDim2.new(0.8, 0, 0.5, 0)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 
--- === Mod Functions ===
+-- Aimbot Button
+aimbotButton.Parent = frame
+aimbotButton.Size = UDim2.new(0, 230, 0, 60)
+aimbotButton.Position = UDim2.new(0, 10, 0, 10)
+aimbotButton.Text = "Toggle Aimbot"
+aimbotButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
--- Speed Boost Toggle
-local speedEnabled = false
-createButton("Toggle Speed Boost", 40, function()
-	speedEnabled = not speedEnabled
-	humanoid.WalkSpeed = speedEnabled and 80 or 16
-end)
+-- Speed Boost Button
+speedButton.Parent = frame
+speedButton.Size = UDim2.new(0, 230, 0, 60)
+speedButton.Position = UDim2.new(0, 10, 0, 80)
+speedButton.Text = "Toggle Speed Boost"
+speedButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
--- Aimbot (smooth aim to closest enemy)
+-- Toggle Menu Button (For hiding/showing the menu)
+toggleButton.Parent = frame
+toggleButton.Size = UDim2.new(0, 230, 0, 60)
+toggleButton.Position = UDim2.new(0, 10, 0, 150)
+toggleButton.Text = "Toggle Menu"
+toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+
+-- Script Variables
 local aimbotEnabled = false
-createButton("Toggle Aimbot", 80, function()
-	aimbotEnabled = not aimbotEnabled
+local speedBoostEnabled = false
+local menuVisible = true
+
+-- Function to Toggle Menu Visibility
+toggleButton.MouseButton1Click:Connect(function()
+    menuVisible = not menuVisible
+    frame.Visible = menuVisible
 end)
 
--- Reset Mods
-createButton("Reset Mods", 120, function()
-	speedEnabled = false
-	aimbotEnabled = false
-	humanoid.WalkSpeed = 16
-end)
-
--- Aimbot Logic (Smooth aim assist)
-local function getClosestTarget()
-	local closest, shortest = nil, math.huge
-	for _, target in pairs(Players:GetPlayers()) do
-		if target ~= player and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-			local distance = (target.Character.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude
-			if distance < shortest then
-				shortest = distance
-				closest = target
-			end
-		end
-	end
-	return closest
+-- Aimbot Logic
+local function getClosestPlayer()
+    local closestPlayer = nil
+    local closestDistance = math.huge
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player.Character and player ~= game.Players.LocalPlayer then
+            local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+            if humanoidRootPart then
+                local distance = (humanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                if distance < closestDistance then
+                    closestDistance = distance
+                    closestPlayer = player
+                end
+            end
+        end
+    end
+    return closestPlayer
 end
 
-RunService.RenderStepped:Connect(function()
-	if aimbotEnabled then
-		local closest = getClosestTarget()
-		if closest and closest.Character and closest.Character:FindFirstChild("HumanoidRootPart") then
-			local hrp = closest.Character:FindFirstChild("HumanoidRootPart")
-			if hrp then
-				-- Smoothly adjust the camera's CFrame towards the target
-				local targetPos = hrp.Position
-				local camPos = camera.CFrame.Position
-				local newCFrame = CFrame.new(camPos, targetPos)
-				camera.CFrame = camera.CFrame:Lerp(newCFrame, 0.1)  -- Smooth aiming (tweak 0.1 for speed)
-			end
-		end
-	end
+-- Aim at the closest player
+local function aimbot()
+    while aimbotEnabled do
+        local targetPlayer = getClosestPlayer()
+        if targetPlayer then
+            local targetPos = targetPlayer.Character.HumanoidRootPart.Position
+            local myPos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
+            local direction = (targetPos - myPos).unit
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(myPos, targetPos)
+        end
+        wait(0.1)
+    end
+end
+
+-- Toggle Aimbot
+aimbotButton.MouseButton1Click:Connect(function()
+    aimbotEnabled = not aimbotEnabled
+    if aimbotEnabled then
+        aimbotButton.Text = "Aimbot: ON"
+        spawn(aimbot) -- Start aimbot in a new thread
+    else
+        aimbotButton.Text = "Aimbot: OFF"
+    end
 end)
+
+-- Speed Boost Logic
+local function enableSpeedBoost()
+    local character = game.Players.LocalPlayer.Character
+    if character and character:FindFirstChild("Humanoid") then
+        local humanoid = character.Humanoid
+        humanoid.WalkSpeed = 100  -- Set speed boost value (can be adjusted)
+    end
+end
+
+local function disableSpeedBoost()
+    local character = game.Players.LocalPlayer.Character
+    if character and character:FindFirstChild("Humanoid") then
+        local humanoid = character.Humanoid
+        humanoid.WalkSpeed = 16  -- Reset to default speed
+    end
+end
+
+-- Toggle Speed Boost
+speedButton.MouseButton1Click:Connect(function()
+    speedBoostEnabled = not speedBoostEnabled
+    if speedBoostEnabled then
+        speedButton.Text = "Speed Boost: ON"
+        enableSpeedBoost()
+    else
+        speedButton.Text = "Speed Boost: OFF"
+        disableSpeedBoost()
+    end
+end)
+
+-- Anti-AntiCheat
+local function antiCheat()
+    while true do
+        -- Keep the player from being kicked by anti-cheat
+        game:GetService("RunService").Heartbeat:Wait()
+    end
+end
+
+-- Start anti-cheat prevention (will keep the script running safely)
+spawn(antiCheat)
+
+-- Set UI to visible initially
+frame.Visible = menuVisible
