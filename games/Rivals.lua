@@ -11,6 +11,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
 
 -- Create main GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -25,12 +26,12 @@ MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.BorderSizePixel = 0
 MainFrame.Position = UDim2.new(0, 10, 0.4, 0)
-MainFrame.Size = UDim2.new(0, 200, 0, 300)
+MainFrame.Size = UDim2.new(0, 250, 0, 400)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.CornerRadius = UDim.new(0, 12)
 UICorner.Parent = MainFrame
 
 local Title = Instance.new("TextLabel")
@@ -42,14 +43,14 @@ Title.Size = UDim2.new(1, 0, 0, 30)
 Title.Font = Enum.Font.GothamBold
 Title.Text = "SwebScript Rivals"
 Title.TextColor3 = Color3.fromRGB(255, 0, 4)
-Title.TextSize = 18
+Title.TextSize = 20
 
 -- Close button
 local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
 CloseButton.Parent = MainFrame
 CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-CloseButton.Position = UDim2.new(1, -25, 0, 5)
+CloseButton.Position = UDim2.new(1, -30, 0, 5)
 CloseButton.Size = UDim2.new(0, 20, 0, 20)
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.Text = "X"
@@ -72,11 +73,11 @@ local function createButton(name, position, callback)
     button.Parent = MainFrame
     button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     button.Position = position
-    button.Size = UDim2.new(0.8, 0, 0, 30)
+    button.Size = UDim2.new(0.8, 0, 0, 35)
     button.Font = Enum.Font.Gotham
     button.Text = name
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 14
+    button.TextSize = 16
     button.AnchorPoint = Vector2.new(0.5, 0)
     button.Position = position
     
@@ -159,7 +160,7 @@ local function getClosestPlayer()
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild(aimbotPart) and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
             local pos = player.Character[aimbotPart].Position
-            local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(pos)
+            local screenPos, onScreen = Camera:WorldToScreenPoint(pos)
             
             if onScreen then
                 local distance = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y)).Magnitude
@@ -179,7 +180,7 @@ end
 local function aimbot()
     if aimbotEnabled and aimbotTarget and aimbotTarget.Character and aimbotTarget.Character:FindFirstChild(aimbotPart) then
         local targetPos = aimbotTarget.Character[aimbotPart].Position
-        local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(targetPos)
+        local screenPos, onScreen = Camera:WorldToScreenPoint(targetPos)
         
         if onScreen then
             -- Smoothly move the mouse towards the target
