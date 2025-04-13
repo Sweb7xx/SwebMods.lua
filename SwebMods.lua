@@ -11,9 +11,21 @@ local humanoid = character:WaitForChild("Humanoid")
 local camera = workspace.CurrentCamera
 
 -- === GUI Setup ===
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+local gui = Instance.new("ScreenGui")
 gui.Name = "SwebModMenu"
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.IgnoreGuiInset = true
 gui.ResetOnSpawn = false
+
+-- Try all safe parenting options
+pcall(function()
+    gui.Parent = gethui and gethui() or game.CoreGui
+end)
+
+if not gui.Parent or not gui:IsDescendantOf(game) then
+    -- Fallback to PlayerGui if not injected to CoreGui
+    gui.Parent = player:WaitForChild("PlayerGui")
+end
 
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 250, 0, 220)
