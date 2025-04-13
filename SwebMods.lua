@@ -1,146 +1,246 @@
--- Ensure the script is running in LocalPlayer context
-if not game:GetService("Players").LocalPlayer then
-    return
-end
+local function loadScript()
+    -- Instances
+    local ScreenGui = Instance.new("ScreenGui")
+    local Frame = Instance.new("Frame")
+    local UICorner = Instance.new("UICorner")
+    local Frame_2 = Instance.new("Frame")
+    local TextButton = Instance.new("TextButton")
+    local UICorner_2 = Instance.new("UICorner")
+    local UICorner_3 = Instance.new("UICorner")
+    local TextLabel = Instance.new("TextLabel")
+    local Frame_3 = Instance.new("Frame")
+    local TextButton_2 = Instance.new("TextButton")
+    local UICorner_4 = Instance.new("UICorner")
+    local UICorner_5 = Instance.new("UICorner")
+    local TextLabel_2 = Instance.new("TextLabel")
+    local TextButton_3 = Instance.new("TextButton")
+    local UICorner_6 = Instance.new("UICorner")
+    local TextLabel_3 = Instance.new("TextLabel")
+    local TextLabel_4 = Instance.new("TextLabel")
+    local TextLabel_5 = Instance.new("TextLabel")
+    local TextLabel_6 = Instance.new("TextLabel")
 
--- Debug: Confirm UI creation
-print("Creating the menu UI...")
+    -- Properties
+    ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ScreenGui.DisplayOrder = 9999
 
--- Create the ScreenGui and parent it to the player's PlayerGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = game.Players.LocalPlayer.PlayerGui
-screenGui.Name = "ModMenu"
+    Frame.Parent = ScreenGui
+    Frame.Active = true
+    Frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)  -- Changed to a darker theme
+    Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Frame.BorderSizePixel = 0
+    Frame.Position = UDim2.new(0.307, 0, 0.223, 0)
+    Frame.Size = UDim2.new(0, 491, 0, 433)
 
--- Create the Frame that will hold the buttons
-local frame = Instance.new("Frame")
-frame.Parent = screenGui
-frame.Size = UDim2.new(0, 250, 0, 400)
-frame.Position = UDim2.new(0.8, 0, 0.5, 0)
-frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    UICorner.CornerRadius = UDim.new(0.03, 0)
+    UICorner.Parent = Frame
 
--- Create the Aimbot button
-local aimbotButton = Instance.new("TextButton")
-aimbotButton.Parent = frame
-aimbotButton.Size = UDim2.new(0, 230, 0, 60)
-aimbotButton.Position = UDim2.new(0, 10, 0, 10)
-aimbotButton.Text = "Toggle Aimbot"
-aimbotButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Frame_2.Parent = Frame
+    Frame_2.BackgroundColor3 = Color3.fromRGB(22, 22, 22)  -- Slightly lighter background
+    Frame_2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Frame_2.BorderSizePixel = 0
+    Frame_2.Position = UDim2.new(0.049, 0, 0.31, 0)
+    Frame_2.Size = UDim2.new(0, 439, 0, 83)
 
--- Create the Speed Boost button
-local speedButton = Instance.new("TextButton")
-speedButton.Parent = frame
-speedButton.Size = UDim2.new(0, 230, 0, 60)
-speedButton.Position = UDim2.new(0, 10, 0, 80)
-speedButton.Text = "Toggle Speed Boost"
-speedButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    TextButton.Parent = Frame_2
+    TextButton.BackgroundColor3 = Color3.fromRGB(0, 186, 255)  -- Changed to a bright cyan
+    TextButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TextButton.BorderSizePixel = 0
+    TextButton.Position = UDim2.new(0.631, 0, 0.17, 0)
+    TextButton.Size = UDim2.new(0, 144, 0, 53)
+    TextButton.Font = Enum.Font.Roboto
+    TextButton.Text = "Load"
+    TextButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+    TextButton.TextSize = 32
 
--- Create the Toggle Menu button (for hiding/showing the menu)
-local toggleButton = Instance.new("TextButton")
-toggleButton.Parent = frame
-toggleButton.Size = UDim2.new(0, 230, 0, 60)
-toggleButton.Position = UDim2.new(0, 10, 0, 150)
-toggleButton.Text = "Toggle Menu"
-toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    UICorner_2.Parent = TextButton
 
--- Script Variables
-local aimbotEnabled = false
-local speedBoostEnabled = false
-local menuVisible = true
+    UICorner_3.Parent = Frame_2
 
--- Function to Toggle Menu Visibility
-toggleButton.MouseButton1Click:Connect(function()
-    menuVisible = not menuVisible
-    frame.Visible = menuVisible
-    print("Menu visibility toggled:", menuVisible)  -- Debug message
-end)
+    TextLabel.Parent = Frame_2
+    TextLabel.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    TextLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TextLabel.BorderSizePixel = 0
+    TextLabel.Position = UDim2.new(0.036, 0, 0.169, 0)
+    TextLabel.Size = UDim2.new(0, 203, 0, 52)
+    TextLabel.Font = Enum.Font.Ubuntu
+    TextLabel.Text = "Swebs Arsenal Beta"  -- Updated branding
+    TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TextLabel.TextSize = 17
 
--- Aimbot Logic
-local function getClosestPlayer()
-    local closestPlayer = nil
-    local closestDistance = math.huge
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player.Character and player ~= game.Players.LocalPlayer then
-            local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-            if humanoidRootPart then
-                local distance = (humanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-                if distance < closestDistance then
-                    closestDistance = distance
-                    closestPlayer = player
+    Frame_3.Parent = Frame
+    Frame_3.BackgroundColor3 = Color3.fromRGB(22, 22, 22)  -- Similar dark theme
+    Frame_3.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Frame_3.BorderSizePixel = 0
+    Frame_3.Position = UDim2.new(0.049, 0, 0.591, 0)
+    Frame_3.Size = UDim2.new(0, 439, 0, 83)
+
+    TextButton_2.Parent = Frame_3
+    TextButton_2.BackgroundColor3 = Color3.fromRGB(0, 186, 255)  -- Bright cyan for consistency
+    TextButton_2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TextButton_2.BorderSizePixel = 0
+    TextButton_2.Position = UDim2.new(0.631, 0, 0.17, 0)
+    TextButton_2.Size = UDim2.new(0, 144, 0, 53)
+    TextButton_2.Font = Enum.Font.Roboto
+    TextButton_2.Text = "Load"
+    TextButton_2.TextColor3 = Color3.fromRGB(0, 0, 0)
+    TextButton_2.TextSize = 32
+
+    UICorner_4.Parent = TextButton_2
+
+    UICorner_5.Parent = Frame_3
+
+    TextLabel_2.Parent = Frame_3
+    TextLabel_2.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    TextLabel_2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TextLabel_2.BorderSizePixel = 0
+    TextLabel_2.Position = UDim2.new(0.036, 0, 0.169, 0)
+    TextLabel_2.Size = UDim2.new(0, 203, 0, 52)
+    TextLabel_2.Font = Enum.Font.Ubuntu
+    TextLabel_2.Text = "Swebs Rivals Beta"  -- Updated branding
+    TextLabel_2.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TextLabel_2.TextSize = 17
+
+    TextButton_3.Parent = Frame
+    TextButton_3.BackgroundColor3 = Color3.fromRGB(255, 0, 4)
+    TextButton_3.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TextButton_3.BorderSizePixel = 0
+    TextButton_3.Position = UDim2.new(0.943, 0, 0.031, 0)
+    TextButton_3.Size = UDim2.new(0, 17, 0, 17)
+    TextButton_3.Font = Enum.Font.SourceSans
+    TextButton_3.Text = ""
+    TextButton_3.TextColor3 = Color3.fromRGB(0, 0, 0)
+    TextButton_3.TextSize = 14
+
+    UICorner_6.CornerRadius = UDim.new(1, 0)
+    UICorner_6.Parent = TextButton_3
+
+    TextLabel_3.Parent = Frame
+    TextLabel_3.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    TextLabel_3.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TextLabel_3.BorderSizePixel = 0
+    TextLabel_3.Position = UDim2.new(0.08, 0, 0.107, 0)
+    TextLabel_3.Size = UDim2.new(0, 47, 0, 64)
+    TextLabel_3.Font = Enum.Font.FredokaOne
+    TextLabel_3.Text = "SWEEBS"  -- Branding update
+    TextLabel_3.TextColor3 = Color3.fromRGB(0, 255, 255)  -- Bright cyan for style
+    TextLabel_3.TextSize = 18
+
+    TextLabel_4.Parent = TextLabel_3
+    TextLabel_4.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    TextLabel_4.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TextLabel_4.BorderSizePixel = 0
+    TextLabel_4.Position = UDim2.new(-0.141, 0, -0.626, 0)
+    TextLabel_4.Size = UDim2.new(0, 47, 0, 64)
+    TextLabel_4.Font = Enum.Font.Bangers
+    TextLabel_4.Text = "S"
+    TextLabel_4.TextColor3 = Color3.fromRGB(0, 255, 255)  -- Cyan for consistency
+    TextLabel_4.TextSize = 61
+
+    TextLabel_5.Parent = Frame
+    TextLabel_5.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    TextLabel_5.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TextLabel_5.BorderSizePixel = 0
+    TextLabel_5.Position = UDim2.new(0.295315683, 0, 0.856812954, 0)
+    TextLabel_5.Size = UDim2.new(0, 200, 0, 50)
+    TextLabel_5.Font = Enum.Font.SourceSans
+    TextLabel_5.Text = "Thank you for using Swebs<3"
+    TextLabel_5.TextColor3 = Color3.fromRGB(217, 217, 217)
+    TextLabel_5.TextSize = 14.000
+    
+    TextLabel_6.Parent = Frame
+    TextLabel_6.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    TextLabel_6.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TextLabel_6.BorderSizePixel = 0
+    TextLabel_6.Position = UDim2.new(0.592667997, 0, 0.868360281, 0)
+    TextLabel_6.Size = UDim2.new(0, 200, 0, 50)
+    TextLabel_6.Visible = false
+    TextLabel_6.Font = Enum.Font.SourceSans
+    TextLabel_6.Text = "Made by SwebsDev"
+    TextLabel_6.TextColor3 = Color3.fromRGB(217, 217, 217)
+    TextLabel_6.TextSize = 14.000
+
+    -- Functions
+    TextButton_3.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+
+    local UserInputService = game:GetService("UserInputService")
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
+
+    local function Update(input)
+        local delta = input.Position - dragStart
+        Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+
+    Frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = Frame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
                 end
-            end
+            end)
         end
-    end
-    return closestPlayer
-end
+    end)
 
--- Aim at the closest player
-local function aimbot()
-    while aimbotEnabled do
-        local targetPlayer = getClosestPlayer()
-        if targetPlayer then
-            local targetPos = targetPlayer.Character.HumanoidRootPart.Position
-            local myPos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(myPos, targetPos)
+    Frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
         end
-        wait(0.1)
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            Update(input)
+        end
+    end)
+
+    local function CreateLoadingAnimation(parent)
+        local LoadingFrame = Instance.new("Frame")
+        LoadingFrame.Size = UDim2.new(1, 0, 1, 0)
+        LoadingFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        LoadingFrame.BackgroundTransparency = 0.5
+        LoadingFrame.Parent = parent
+    
+        local LoadingLabel = Instance.new("TextLabel")
+        LoadingLabel.Text = "Loading..."
+        LoadingLabel.Size = UDim2.new(1, 0, 0, 30)
+        LoadingLabel.Position = UDim2.new(0, 0, 0.5, -15)
+        LoadingLabel.BackgroundTransparency = 1
+        LoadingLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        LoadingLabel.Font = Enum.Font.GothamBold
+        LoadingLabel.TextSize = 16
+        LoadingLabel.Parent = LoadingFrame
+    
+        return LoadingFrame
     end
+
+    TextButton.MouseButton1Click:Connect(function()
+        local LoadingAnimation = CreateLoadingAnimation(Frame)
+        wait(2)
+        LoadingAnimation:Destroy()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/blackowl1231/SWEBES/refs/heads/main/Games/SWEBES%20Arsenal%20Beta.lua"))()
+    end)
+
+    TextButton_2.MouseButton1Click:Connect(function()
+        local LoadingAnimation = CreateLoadingAnimation(Frame)
+        wait(2)
+        LoadingAnimation:Destroy()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/blackowl1231/SWEBES/refs/heads/main/Games/SWEBES%20Rivals%20Beta.lua"))()
+    end)
+
+    wait(2)
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/blackowl1231/SWEBES/refs/heads/main/Games/Test.lua"))()
 end
 
--- Toggle Aimbot
-aimbotButton.MouseButton1Click:Connect(function()
-    aimbotEnabled = not aimbotEnabled
-    if aimbotEnabled then
-        aimbotButton.Text = "Aimbot: ON"
-        spawn(aimbot) -- Start aimbot in a new thread
-        print("Aimbot enabled")  -- Debug message
-    else
-        aimbotButton.Text = "Aimbot: OFF"
-        print("Aimbot disabled")  -- Debug message
-    end
-end)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/blackowl1231/SWEBES/refs/heads/main/Games/other.lua"))()
 
--- Speed Boost Logic
-local function enableSpeedBoost()
-    local character = game.Players.LocalPlayer.Character
-    if character and character:FindFirstChild("Humanoid") then
-        local humanoid = character.Humanoid
-        humanoid.WalkSpeed = 100  -- Set speed boost value (can be adjusted)
-    end
-end
-
-local function disableSpeedBoost()
-    local character = game.Players.LocalPlayer.Character
-    if character and character:FindFirstChild("Humanoid") then
-        local humanoid = character.Humanoid
-        humanoid.WalkSpeed = 16  -- Reset to default speed
-    end
-end
-
--- Toggle Speed Boost
-speedButton.MouseButton1Click:Connect(function()
-    speedBoostEnabled = not speedBoostEnabled
-    if speedBoostEnabled then
-        speedButton.Text = "Speed Boost: ON"
-        enableSpeedBoost()
-        print("Speed boost enabled")  -- Debug message
-    else
-        speedButton.Text = "Speed Boost: OFF"
-        disableSpeedBoost()
-        print("Speed boost disabled")  -- Debug message
-    end
-end)
-
--- Anti-AntiCheat
-local function antiCheat()
-    while true do
-        -- Keep the player from being kicked by anti-cheat
-        game:GetService("RunService").Heartbeat:Wait()
-    end
-end
-
--- Start anti-cheat prevention (will keep the script running safely)
-spawn(antiCheat)
-
--- Set initial visibility of the menu to true
-frame.Visible = true
-print("Menu UI created and visible")
+loadScript()
