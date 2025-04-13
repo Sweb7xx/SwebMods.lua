@@ -88,56 +88,68 @@ local function createButton(name, position, callback)
     return button
 end
 
--- ESP Function
-local espEnabled = false
-local espObjects = {}
+-- Skeleton ESP
+local skeletonESPEnabled = false
+local skeletonObjects = {}
 
-local function toggleESP()
-    espEnabled = not espEnabled
+local function toggleSkeletonESP()
+    skeletonESPEnabled = not skeletonESPEnabled
     
-    -- Clear existing ESP
-    for _, obj in pairs(espObjects) do
+    -- Clear existing skeleton ESP
+    for _, obj in pairs(skeletonObjects) do
         if obj and obj.Parent then
             obj:Destroy()
         end
     end
-    espObjects = {}
+    skeletonObjects = {}
     
-    if espEnabled then
-        -- Create Bone ESP for all players
+    if skeletonESPEnabled then
+        -- Create Skeleton ESP for all players
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
-                local function createESP(character)
+                local function createSkeletonESP(character)
                     if character and character:FindFirstChild("HumanoidRootPart") then
-                        -- ESP for specific bones like Head or HumanoidRootPart
-                        local function addBoneESP(boneName)
-                            local bone = character:FindFirstChild(boneName)
-                            if bone then
-                                local highlight = Instance.new("Highlight")
-                                highlight.Name = "SwebESP"
-                                highlight.FillColor = Color3.fromRGB(255, 0, 0)
-                                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-                                highlight.FillTransparency = 0.5
-                                highlight.OutlineTransparency = 0
-                                highlight.Parent = bone
-                                
-                                table.insert(espObjects, highlight)
+                        local function drawLine(startPart, endPart)
+                            local startPos, startOnScreen = workspace.CurrentCamera:WorldToScreenPoint(startPart.Position)
+                            local endPos, endOnScreen = workspace.CurrentCamera:WorldToScreenPoint(endPart.Position)
+                            if startOnScreen and endOnScreen then
+                                local line = Instance.new("LineHandleAdornment")
+                                line.Adornee = workspace.CurrentCamera
+                                line.Color3 = Color3.fromRGB(255, 0, 0)
+                                line.Thickness = 2
+                                line.CFrame = CFrame.new(startPart.Position, endPart.Position)
+                                line.Parent = game.CoreGui
+                                table.insert(skeletonObjects, line)
                             end
                         end
 
-                        -- Add ESP to the bones
-                        addBoneESP("Head")
-                        addBoneESP("UpperTorso")
+                        -- Draw skeleton lines between bones
+                        local function addSkeletonBones(boneName1, boneName2)
+                            local bone1 = character:FindFirstChild(boneName1)
+                            local bone2 = character:FindFirstChild(boneName2)
+                            if bone1 and bone2 then
+                                drawLine(bone1, bone2)
+                            end
+                        end
+
+                        -- Add ESP for bone pairs (skeleton)
+                        addSkeletonBones("Head", "UpperTorso")
+                        addSkeletonBones("UpperTorso", "LowerTorso")
+                        addSkeletonBones("LowerTorso", "HumanoidRootPart")
+                        addSkeletonBones("LeftUpperLeg", "LeftLowerLeg")
+                        addSkeletonBones("RightUpperLeg", "RightLowerLeg")
+                        addSkeletonBones("LeftUpperArm", "LeftLowerArm")
+                        addSkeletonBones("RightUpperArm", "RightLowerArm")
                     end
                 end
 
                 if player.Character then
-                    createESP(player.Character)
+                    createSkeletonESP(player.Character)
                 end
 
                 player.CharacterAdded:Connect(function(character)
-                    if espEnabled then
-                        createESP(character)
+                    if skeletonESPEnabled then
+                        createSkeletonESP(character)
                     end
                 end)
             end
@@ -146,155 +158,16 @@ local function toggleESP()
         -- Handle new players joining
         Players.PlayerAdded:Connect(function(player)
             player.CharacterAdded:Connect(function(character)
-                if espEnabled then
-                    createESP(character)
+                if skeletonESPEnabled then
+                    createSkeletonESP(character)
                 end
             end)
         end)
     end
 end
 
--- Aimbot variables
-local aimbotEnabled = false
-local aimbotTarget = nil
-local aimbotPart = "Head" -- Target part (Head or HumanoidRootPart)
-local aimbotSensitivity = 1 -- Lower = smoother
-local maxDistance = 150 -- Max distance for aimbot (150 meters)
-
-local function getClosestPlayer()
-    local closestPlayer = nil
-    local shortestDistance = math.huge
-
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild(aimbotPart) and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-            local pos = player.Character[aimbotPart].Position
-            local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(pos)
-
-            if onScreen then
-                local distance = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y)).Magnitude
-                local playerDistance = (LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
-                if distance < shortestDistance and playerDistance <= maxDistance then
-                    shortestDistance = distance
-                    closestPlayer = player
-                end
-            end
-        end
-    end
-
-    return closestPlayer
-end
-
--- Aimbot function
-local function aimbot()
-    if aimbotEnabled and aimbotTarget and aimbotTarget.Character and aimbotTarget.Character:FindFirstChild(aimbotPart) then
-        local pos = aimbotTarget.Character[aimbotPart].Position
-        local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(pos)
-
-        if onScreen then
-            mousemoverel(
-                (screenPos.X - LocalPlayer:GetMouse().X) * aimbotSensitivity,
-                (screenPos.Y - LocalPlayer:GetMouse().Y) * aimbotSensitivity
-            )
-        end
-    end
-end
-
--- Toggle aimbot
-local function toggleAimbot()
-    aimbotEnabled = not aimbotEnabled
-
-    if aimbotEnabled then
-        -- Continuously update target
-        RunService:BindToRenderStep("Aimbot", 1, function()
-            aimbotTarget = getClosestPlayer()
-            if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then -- Right mouse button
-                aimbot()
-            end
-        end)
-    else
-        RunService:UnbindFromRenderStep("Aimbot")
-    end
-end
-
--- Infinite ammo function
-local infiniteAmmoEnabled = false
-local function toggleInfiniteAmmo()
-    infiniteAmmoEnabled = not infiniteAmmoEnabled
-
-    if infiniteAmmoEnabled then
-        -- Hook into the ammo system
-        local mt = getrawmetatable(game)
-        local oldIndex = mt.__index
-        setreadonly(mt, false)
-
-        mt.__index = newcclosure(function(self, key)
-            if infiniteAmmoEnabled and key == "Ammo" then
-                return 999
-            end
-            return oldIndex(self, key)
-        end)
-
-        setreadonly(mt, true)
-    end
-end
-
--- Speed hack
-local speedEnabled = false
-local defaultSpeed = 16
-local speedMultiplier = 2
-
-local function toggleSpeed()
-    speedEnabled = not speedEnabled
-
-    if speedEnabled then
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = defaultSpeed * speedMultiplier
-        end
-
-        LocalPlayer.CharacterAdded:Connect(function(character)
-            if speedEnabled and character:FindFirstChild("Humanoid") then
-                character.Humanoid.WalkSpeed = defaultSpeed * speedMultiplier
-            end
-        end)
-    else
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = defaultSpeed
-        end
-    end
-end
-
--- No recoil function
-local noRecoilEnabled = false
-local function toggleNoRecoil()
-    noRecoilEnabled = not noRecoilEnabled
-
-    if noRecoilEnabled then
-        -- Hook into the recoil system
-        local mt = getrawmetatable(game)
-        local oldNamecall = mt.__namecall
-        setreadonly(mt, false)
-
-        mt.__namecall = newcclosure(function(self, ...)
-            local args = {...}
-            local method = getnamecallmethod()
-
-            if noRecoilEnabled and method == "FireServer" and tostring(self) == "RecoilEvent" then
-                return nil
-            end
-
-            return oldNamecall(self, ...)
-        end)
-
-        setreadonly(mt, true)
-    end
-end
-
 -- Create buttons
-createButton("ESP", UDim2.new(0.5, 0, 0, 50), toggleESP)
-createButton("Aimbot", UDim2.new(0.5, 0, 0, 90), toggleAimbot)
-createButton("Infinite Ammo", UDim2.new(0.5, 0, 0, 130), toggleInfiniteAmmo)
-createButton("Speed Hack", UDim2.new(0.5, 0, 0, 170), toggleSpeed)
-createButton("No Recoil", UDim2.new(0.5, 0, 0, 210), toggleNoRecoil)
+createButton("Skeleton ESP", UDim2.new(0.5, 0, 0, 50), toggleSkeletonESP)
 
 -- Status label
 local StatusLabel = Instance.new("TextLabel")
