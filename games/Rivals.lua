@@ -6,7 +6,6 @@ notification.Text = "SwebScript Rivals loaded successfully!"
 notification.Parent = game.Workspace
 wait(3)
 notification:Destroy()
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -79,77 +78,55 @@ local function createButton(name, position, callback)
     button.TextSize = 14
     button.AnchorPoint = Vector2.new(0.5, 0)
     button.Position = position
-
+    
     local UICorner = Instance.new("UICorner")
     UICorner.CornerRadius = UDim.new(0, 6)
     UICorner.Parent = button
-
+    
     button.MouseButton1Click:Connect(callback)
     return button
 end
 
--- Skeleton ESP
-local skeletonESPEnabled = false
-local skeletonObjects = {}
+-- Box ESP Function
+local espEnabled = false
+local espObjects = {}
 
-local function toggleSkeletonESP()
-    skeletonESPEnabled = not skeletonESPEnabled
+local function toggleESP()
+    espEnabled = not espEnabled
     
-    -- Clear existing skeleton ESP
-    for _, obj in pairs(skeletonObjects) do
+    -- Clear existing ESP
+    for _, obj in pairs(espObjects) do
         if obj and obj.Parent then
             obj:Destroy()
         end
     end
-    skeletonObjects = {}
+    espObjects = {}
     
-    if skeletonESPEnabled then
-        -- Create Skeleton ESP for all players
+    if espEnabled then
+        -- Create ESP for all players
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
-                local function createSkeletonESP(character)
+                local function createESP(character)
                     if character and character:FindFirstChild("HumanoidRootPart") then
-                        local function drawLine(startPart, endPart)
-                            local startPos, startOnScreen = workspace.CurrentCamera:WorldToScreenPoint(startPart.Position)
-                            local endPos, endOnScreen = workspace.CurrentCamera:WorldToScreenPoint(endPart.Position)
-                            if startOnScreen and endOnScreen then
-                                local line = Instance.new("LineHandleAdornment")
-                                line.Adornee = workspace.CurrentCamera
-                                line.Color3 = Color3.fromRGB(255, 0, 0)
-                                line.Thickness = 2
-                                line.CFrame = CFrame.new(startPart.Position, endPart.Position)
-                                line.Parent = game.CoreGui
-                                table.insert(skeletonObjects, line)
-                            end
-                        end
-
-                        -- Draw skeleton lines between bones
-                        local function addSkeletonBones(boneName1, boneName2)
-                            local bone1 = character:FindFirstChild(boneName1)
-                            local bone2 = character:FindFirstChild(boneName2)
-                            if bone1 and bone2 then
-                                drawLine(bone1, bone2)
-                            end
-                        end
-
-                        -- Add ESP for bone pairs (skeleton)
-                        addSkeletonBones("Head", "UpperTorso")
-                        addSkeletonBones("UpperTorso", "LowerTorso")
-                        addSkeletonBones("LowerTorso", "HumanoidRootPart")
-                        addSkeletonBones("LeftUpperLeg", "LeftLowerLeg")
-                        addSkeletonBones("RightUpperLeg", "RightLowerLeg")
-                        addSkeletonBones("LeftUpperArm", "LeftLowerArm")
-                        addSkeletonBones("RightUpperArm", "RightLowerArm")
+                        local box = Instance.new("BoxHandleAdornment")
+                        box.Name = "SwebESP"
+                        box.Adornee = character.HumanoidRootPart
+                        box.Size = character.HumanoidRootPart.Size + Vector3.new(2, 4, 2)
+                        box.Color3 = Color3.fromRGB(255, 0, 0)
+                        box.Transparency = 0.5
+                        box.Parent = character
+                        
+                        table.insert(espObjects, box)
                     end
                 end
-
+                
                 if player.Character then
-                    createSkeletonESP(player.Character)
+                    createESP(player.Character)
                 end
-
+                
                 player.CharacterAdded:Connect(function(character)
-                    if skeletonESPEnabled then
-                        createSkeletonESP(character)
+                    if espEnabled then
+                        createESP(character)
                     end
                 end)
             end
@@ -158,16 +135,154 @@ local function toggleSkeletonESP()
         -- Handle new players joining
         Players.PlayerAdded:Connect(function(player)
             player.CharacterAdded:Connect(function(character)
-                if skeletonESPEnabled then
-                    createSkeletonESP(character)
+                if espEnabled then
+                    createESP(character)
                 end
             end)
         end)
     end
 end
 
+-- Aimbot variables
+local aimbotEnabled = false
+local aimbotTarget = nil
+local aimbotPart = "Head" -- Target part (Head or HumanoidRootPart)
+local maxDistance = 150 -- Max distance for aimbot
+local aimbotSensitivity = 1 -- Lower = smoother
+
+local function getClosestPlayer()
+    local closestPlayer = nil
+    local shortestDistance = maxDistance -- 150m max range
+    
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild(aimbotPart) and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+            local pos = player.Character[aimbotPart].Position
+            local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(pos)
+            
+            if onScreen then
+                local distance = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y)).Magnitude
+                if distance < shortestDistance then
+                    shortestDistance = distance
+                    closestPlayer = player
+                end
+            end
+        end
+    end
+    
+    return closestPlayer
+end
+
+-- Aimbot function
+local function aimbot()
+    if aimbotEnabled and aimbotTarget and aimbotTarget.Character and aimbotTarget.Character:FindFirstChild(aimbotPart) then
+        local pos = aimbotTarget.Character[aimbotPart].Position
+        local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(pos)
+        
+        if onScreen then
+            mousemoverel(
+                (screenPos.X - LocalPlayer:GetMouse().X) * aimbotSensitivity,
+                (screenPos.Y - LocalPlayer:GetMouse().Y) * aimbotSensitivity
+            )
+        end
+    end
+end
+
+-- Toggle aimbot
+local function toggleAimbot()
+    aimbotEnabled = not aimbotEnabled
+    
+    if aimbotEnabled then
+        -- Continuously update target
+        RunService:BindToRenderStep("Aimbot", 1, function()
+            aimbotTarget = getClosestPlayer()
+            if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then -- Right mouse button
+                aimbot()
+            end
+        end)
+    else
+        RunService:UnbindFromRenderStep("Aimbot")
+    end
+end
+
+-- Infinite ammo function
+local infiniteAmmoEnabled = false
+local function toggleInfiniteAmmo()
+    infiniteAmmoEnabled = not infiniteAmmoEnabled
+    
+    if infiniteAmmoEnabled then
+        -- Hook into the ammo system
+        local mt = getrawmetatable(game)
+        local oldIndex = mt.__index
+        setreadonly(mt, false)
+        
+        mt.__index = newcclosure(function(self, key)
+            if infiniteAmmoEnabled and key == "Ammo" then
+                return 999
+            end
+            return oldIndex(self, key)
+        end)
+        
+        setreadonly(mt, true)
+    end
+end
+
+-- Speed hack
+local speedEnabled = false
+local defaultSpeed = 16
+local speedMultiplier = 2
+
+local function toggleSpeed()
+    speedEnabled = not speedEnabled
+    
+    if speedEnabled then
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = defaultSpeed * speedMultiplier
+        end
+        
+        LocalPlayer.CharacterAdded:Connect(function(character)
+            if speedEnabled and character:FindFirstChild("Humanoid") then
+                character.Humanoid.WalkSpeed = defaultSpeed * speedMultiplier
+            end
+        end)
+    else
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = defaultSpeed
+        end
+    end
+end
+
+-- No recoil function
+local noRecoilEnabled = false
+local function toggleNoRecoil()
+    noRecoilEnabled = not noRecoilEnabled
+    
+    if noRecoilEnabled then
+        -- Hook into the recoil system
+        local mt = getrawmetatable(game)
+        local oldNamecall = mt.__namecall
+        setreadonly(mt, false)
+        
+        mt.__namecall = newcclosure(function(self, ...)
+            local args = {...}
+            local method = getnamecallmethod()
+            
+            if noRecoilEnabled and method == "FireServer" and tostring(self) == "RecoilEvent" then
+                return nil
+            end
+            
+            return oldNamecall(self, ...)
+        end)
+        
+        setreadonly(mt, true)
+    end
+end
+
 -- Create buttons
-createButton("Skeleton ESP", UDim2.new(0.5, 0, 0, 50), toggleSkeletonESP)
+createButton("ESP", UDim2.new(0.5, 0, 0, 50), toggleESP)
+createButton("Aimbot", UDim2.new(0.5, 0, 0, 90), toggleAimbot)
+createButton("Infinite Ammo", UDim2.new(0.5, 0, 0, 130), toggleInfiniteAmmo)
+createButton("Speed Hack", UDim2.new(0.5, 0, 0, 170), toggleSpeed)
+createButton("No Recoil", UDim2.new(0.5, 0, 0, 210), toggleNoRecoil)
 
 -- Status label
 local StatusLabel = Instance.new("TextLabel")
@@ -194,19 +309,19 @@ local function bypassAntiCheat()
     local mt = getrawmetatable(game)
     local oldNamecall = mt.__namecall
     setreadonly(mt, false)
-
+    
     mt.__namecall = newcclosure(function(self, ...)
         local args = {...}
         local method = getnamecallmethod()
-
+        
         -- Attempt to block anti-cheat reports
         if method == "FireServer" and tostring(self):find("Report") then
             return nil
         end
-
+        
         return oldNamecall(self, ...)
     end)
-
+    
     setreadonly(mt, true)
 end
 
