@@ -1,6 +1,6 @@
 print("SwebScript Rivals loaded successfully!")
 
--- Notification on load
+-- Your Rivals script code will go here
 local notification = Instance.new("Message")
 notification.Text = "SwebScript Rivals loaded successfully!"
 notification.Parent = game.Workspace
@@ -79,11 +79,11 @@ local function createButton(name, position, callback)
     button.TextSize = 14
     button.AnchorPoint = Vector2.new(0.5, 0)
     button.Position = position
-
+    
     local UICorner = Instance.new("UICorner")
     UICorner.CornerRadius = UDim.new(0, 6)
     UICorner.Parent = button
-
+    
     button.MouseButton1Click:Connect(callback)
     return button
 end
@@ -94,7 +94,7 @@ local espObjects = {}
 
 local function toggleESP()
     espEnabled = not espEnabled
-
+    
     -- Clear existing ESP
     for _, obj in pairs(espObjects) do
         if obj and obj.Parent then
@@ -102,7 +102,7 @@ local function toggleESP()
         end
     end
     espObjects = {}
-
+    
     if espEnabled then
         -- Create ESP for all players
         for _, player in pairs(Players:GetPlayers()) do
@@ -116,15 +116,15 @@ local function toggleESP()
                         highlight.FillTransparency = 0.5
                         highlight.OutlineTransparency = 0
                         highlight.Parent = character
-
+                        
                         table.insert(espObjects, highlight)
                     end
                 end
-
+                
                 if player.Character then
                     createESP(player.Character)
                 end
-
+                
                 player.CharacterAdded:Connect(function(character)
                     if espEnabled then
                         createESP(character)
@@ -132,7 +132,7 @@ local function toggleESP()
                 end)
             end
         end
-
+        
         -- Handle new players joining
         Players.PlayerAdded:Connect(function(player)
             player.CharacterAdded:Connect(function(character)
@@ -144,23 +144,26 @@ local function toggleESP()
     end
 end
 
--- Aimbot
+-- Aimbot variables
 local aimbotEnabled = false
 local aimbotTarget = nil
-local aimbotPart = "Head" -- Target part (Head or HumanoidRootPart)
-local aimbotSensitivity = 1 -- Lower = smoother
+local aimbotPart = "Head"  -- Target part (Head or HumanoidRootPart)
+local aimbotSensitivity = 0.2  -- Lower = smoother, higher = faster movement
+local smoothnessFactor = 10  -- Higher = slower but smoother aiming
 
+-- Function to get the closest player to the mouse
 local function getClosestPlayer()
     local closestPlayer = nil
     local shortestDistance = math.huge
-
+    
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild(aimbotPart) and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
             local pos = player.Character[aimbotPart].Position
             local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(pos)
-
+            
             if onScreen then
                 local distance = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y)).Magnitude
+                -- Only target the closest player
                 if distance < shortestDistance then
                     shortestDistance = distance
                     closestPlayer = player
@@ -168,32 +171,36 @@ local function getClosestPlayer()
             end
         end
     end
-
+    
     return closestPlayer
 end
 
+-- Function to perform the aimbot
 local function aimbot()
     if aimbotEnabled and aimbotTarget and aimbotTarget.Character and aimbotTarget.Character:FindFirstChild(aimbotPart) then
-        local pos = aimbotTarget.Character[aimbotPart].Position
-        local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(pos)
-
+        local targetPos = aimbotTarget.Character[aimbotPart].Position
+        local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(targetPos)
+        
         if onScreen then
-            mousemoverel(
-                (screenPos.X - LocalPlayer:GetMouse().X) * aimbotSensitivity,
-                (screenPos.Y - LocalPlayer:GetMouse().Y) * aimbotSensitivity
-            )
+            -- Smoothly move the mouse towards the target
+            local deltaX = (screenPos.X - LocalPlayer:GetMouse().X) / smoothnessFactor
+            local deltaY = (screenPos.Y - LocalPlayer:GetMouse().Y) / smoothnessFactor
+
+            -- Apply smoothing for more natural aim movement
+            mousemoverel(deltaX * aimbotSensitivity, deltaY * aimbotSensitivity)
         end
     end
 end
 
+-- Toggle aimbot function
 local function toggleAimbot()
     aimbotEnabled = not aimbotEnabled
-
+    
     if aimbotEnabled then
-        -- Continuously update target
+        -- Continuously update target and apply aimbot
         RunService:BindToRenderStep("Aimbot", 1, function()
             aimbotTarget = getClosestPlayer()
-            if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then -- Right mouse button
+            if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
                 aimbot()
             end
         end)
@@ -202,41 +209,41 @@ local function toggleAimbot()
     end
 end
 
--- Infinite Ammo
+-- Infinite ammo function
 local infiniteAmmoEnabled = false
 local function toggleInfiniteAmmo()
     infiniteAmmoEnabled = not infiniteAmmoEnabled
-
+    
     if infiniteAmmoEnabled then
         -- Hook into the ammo system
         local mt = getrawmetatable(game)
         local oldIndex = mt.__index
         setreadonly(mt, false)
-
+        
         mt.__index = newcclosure(function(self, key)
             if infiniteAmmoEnabled and key == "Ammo" then
                 return 999
             end
             return oldIndex(self, key)
         end)
-
+        
         setreadonly(mt, true)
     end
 end
 
--- Speed Hack
+-- Speed hack
 local speedEnabled = false
 local defaultSpeed = 16
 local speedMultiplier = 2
 
 local function toggleSpeed()
     speedEnabled = not speedEnabled
-
+    
     if speedEnabled then
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.WalkSpeed = defaultSpeed * speedMultiplier
         end
-
+        
         LocalPlayer.CharacterAdded:Connect(function(character)
             if speedEnabled and character:FindFirstChild("Humanoid") then
                 character.Humanoid.WalkSpeed = defaultSpeed * speedMultiplier
@@ -249,28 +256,28 @@ local function toggleSpeed()
     end
 end
 
--- No Recoil
+-- No recoil function
 local noRecoilEnabled = false
 local function toggleNoRecoil()
     noRecoilEnabled = not noRecoilEnabled
-
+    
     if noRecoilEnabled then
         -- Hook into the recoil system
         local mt = getrawmetatable(game)
         local oldNamecall = mt.__namecall
         setreadonly(mt, false)
-
+        
         mt.__namecall = newcclosure(function(self, ...)
             local args = {...}
             local method = getnamecallmethod()
-
+            
             if noRecoilEnabled and method == "FireServer" and tostring(self) == "RecoilEvent" then
                 return nil
             end
-
+            
             return oldNamecall(self, ...)
         end)
-
+        
         setreadonly(mt, true)
     end
 end
@@ -303,21 +310,23 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
 
 -- Anti-cheat bypass attempts
 local function bypassAntiCheat()
+    -- Basic anti-cheat bypass attempts
     local mt = getrawmetatable(game)
     local oldNamecall = mt.__namecall
     setreadonly(mt, false)
-
+    
     mt.__namecall = newcclosure(function(self, ...)
         local args = {...}
         local method = getnamecallmethod()
-
+        
+        -- Attempt to block anti-cheat reports
         if method == "FireServer" and tostring(self):find("Report") then
             return nil
         end
-
+        
         return oldNamecall(self, ...)
     end)
-
+    
     setreadonly(mt, true)
 end
 
