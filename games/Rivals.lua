@@ -1,17 +1,10 @@
 print("SwebScript Rivals loaded successfully!")
 
--- Create notification for script loaded
-local notification = Instance.new("Message")
-notification.Text = "SwebScript Rivals loaded successfully!"
-notification.Parent = game.Workspace
-wait(3)
-notification:Destroy()
-
--- Services
+-- Variables
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 -- GUI Setup
 local ScreenGui = Instance.new("ScreenGui")
@@ -45,7 +38,7 @@ Title.Text = "SwebScript Rivals"
 Title.TextColor3 = Color3.fromRGB(255, 0, 4)
 Title.TextSize = 18
 
--- Close Button
+-- Close button
 local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
 CloseButton.Parent = MainFrame
@@ -66,66 +59,44 @@ CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- Helper function to create buttons
-local function createButton(name, position, callback)
-    local button = Instance.new("TextButton")
-    button.Name = name
-    button.Parent = MainFrame
-    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    button.Position = position
-    button.Size = UDim2.new(0.8, 0, 0, 30)
-    button.Font = Enum.Font.Gotham
-    button.Text = name
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 14
-    button.AnchorPoint = Vector2.new(0.5, 0)
-    button.Position = position
-    
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 6)
-    UICorner.Parent = button
-    
-    button.MouseButton1Click:Connect(callback)
-    return button
-end
-
--- Box ESP Setup
+-- ESP Box Setup
 local espEnabled = false
 local espObjects = {}
 
 local function toggleESP()
     espEnabled = not espEnabled
-    
-    -- Clear existing ESP
     for _, obj in pairs(espObjects) do
         if obj and obj.Parent then
             obj:Destroy()
         end
     end
     espObjects = {}
-    
+
     if espEnabled then
-        -- Create ESP for all players
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
                 local function createESP(character)
                     if character and character:FindFirstChild("HumanoidRootPart") then
-                        local box = Instance.new("BoxHandleAdornment")
-                        box.Name = "SwebESP"
+                        local box = Instance.new("BillboardGui")
                         box.Adornee = character.HumanoidRootPart
-                        box.Size = character.HumanoidRootPart.Size + Vector3.new(2, 4, 2)
-                        box.Color3 = Color3.fromRGB(255, 0, 0)
-                        box.Transparency = 0.5
+                        box.Size = UDim2.new(0, 100, 0, 100)
+                        box.AlwaysOnTop = true
                         box.Parent = character
-                        
+
+                        local frame = Instance.new("Frame")
+                        frame.Size = UDim2.new(1, 0, 1, 0)
+                        frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                        frame.BorderSizePixel = 0
+                        frame.Parent = box
+
                         table.insert(espObjects, box)
                     end
                 end
-                
+
                 if player.Character then
                     createESP(player.Character)
                 end
-                
+
                 player.CharacterAdded:Connect(function(character)
                     if espEnabled then
                         createESP(character)
@@ -133,8 +104,7 @@ local function toggleESP()
                 end)
             end
         end
-        
-        -- Handle new players joining
+
         Players.PlayerAdded:Connect(function(player)
             player.CharacterAdded:Connect(function(character)
                 if espEnabled then
@@ -149,18 +119,17 @@ end
 local aimbotEnabled = false
 local aimbotTarget = nil
 local aimbotPart = "Head" -- Target part (Head or HumanoidRootPart)
-local maxDistance = 150 -- Max distance for aimbot
-local aimbotSensitivity = 1 -- Lower = smoother
+local aimbotDistance = 150 -- Maximum distance for aimbot
 
 local function getClosestPlayer()
     local closestPlayer = nil
-    local shortestDistance = maxDistance -- 150m max range
-    
+    local shortestDistance = aimbotDistance
+
     for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild(aimbotPart) and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild(aimbotPart) then
             local pos = player.Character[aimbotPart].Position
             local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(pos)
-            
+
             if onScreen then
                 local distance = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y)).Magnitude
                 if distance < shortestDistance then
@@ -170,34 +139,30 @@ local function getClosestPlayer()
             end
         end
     end
-    
+
     return closestPlayer
 end
 
--- Aimbot function
 local function aimbot()
-    if aimbotEnabled and aimbotTarget and aimbotTarget.Character and aimbotTarget.Character:FindFirstChild(aimbotPart) then
-        local pos = aimbotTarget.Character[aimbotPart].Position
-        local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(pos)
-        
-        if onScreen then
-            mousemoverel(
-                (screenPos.X - LocalPlayer:GetMouse().X) * aimbotSensitivity,
-                (screenPos.Y - LocalPlayer:GetMouse().Y) * aimbotSensitivity
-            )
+    if aimbotEnabled and aimbotTarget and aimbotTarget.Character then
+        local part = aimbotTarget.Character:FindFirstChild(aimbotPart)
+        if part then
+            local pos = part.Position
+            local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(pos)
+            if onScreen then
+                mousemoverel((screenPos.X - LocalPlayer:GetMouse().X), (screenPos.Y - LocalPlayer:GetMouse().Y))
+            end
         end
     end
 end
 
--- Toggle aimbot
 local function toggleAimbot()
     aimbotEnabled = not aimbotEnabled
-    
+
     if aimbotEnabled then
-        -- Continuously update target
         RunService:BindToRenderStep("Aimbot", 1, function()
             aimbotTarget = getClosestPlayer()
-            if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then -- Right mouse button
+            if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then -- Right-click
                 aimbot()
             end
         end)
@@ -206,21 +171,29 @@ local function toggleAimbot()
     end
 end
 
--- Give Keys Function
-local function giveKeys(amount)
-    -- Simulate giving keys to the player
-    local keys = LocalPlayer.leaderstats and LocalPlayer.leaderstats.Keys
-    if keys then
-        keys.Value = keys.Value + amount
-    end
+-- Create Buttons
+local function createButton(name, position, callback)
+    local button = Instance.new("TextButton")
+    button.Name = name
+    button.Parent = MainFrame
+    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    button.Position = position
+    button.Size = UDim2.new(0.8, 0, 0, 30)
+    button.Font = Enum.Font.Gotham
+    button.Text = name
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextSize = 14
+    button.AnchorPoint = Vector2.new(0.5, 0)
+    button.Position = position
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 6)
+    UICorner.Parent = button
+
+    button.MouseButton1Click:Connect(callback)
+    return button
 end
 
--- Create Give Keys button
-createButton("Give Keys", UDim2.new(0.5, 0, 0, 250), function()
-    giveKeys(10) -- Give 10 keys when button is pressed
-end)
-
--- Create other buttons
 createButton("ESP", UDim2.new(0.5, 0, 0, 50), toggleESP)
 createButton("Aimbot", UDim2.new(0.5, 0, 0, 90), toggleAimbot)
 
@@ -229,7 +202,7 @@ local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Name = "StatusLabel"
 StatusLabel.Parent = MainFrame
 StatusLabel.BackgroundTransparency = 1
-StatusLabel.Position = UDim2.new(0, 0, 0, 280)
+StatusLabel.Position = UDim2.new(0, 0, 0, 250)
 StatusLabel.Size = UDim2.new(1, 0, 0, 30)
 StatusLabel.Font = Enum.Font.Gotham
 StatusLabel.Text = "SwebScript v1.0"
@@ -242,31 +215,6 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Text = "Cheat menu loaded successfully!",
     Duration = 5
 })
-
--- Anti-cheat bypass attempts
-local function bypassAntiCheat()
-    -- Basic anti-cheat bypass attempts
-    local mt = getrawmetatable(game)
-    local oldNamecall = mt.__namecall
-    setreadonly(mt, false)
-    
-    mt.__namecall = newcclosure(function(self, ...)
-        local args = {...}
-        local method = getnamecallmethod()
-        
-        -- Attempt to block anti-cheat reports
-        if method == "FireServer" and tostring(self):find("Report") then
-            return nil
-        end
-        
-        return oldNamecall(self, ...)
-    end)
-    
-    setreadonly(mt, true)
-end
-
--- Try to bypass anti-cheat
-pcall(bypassAntiCheat)
 
 -- Return success message
 return "SwebScript Rivals loaded successfully!"
