@@ -1,35 +1,41 @@
--- SwebMods.lua (hosted at https://raw.githubusercontent.com/Sweb7xx/SwebMods.lua/main/SwebMods.lua)
+-- Ensure the script is running in LocalPlayer context
+if not game:GetService("Players").LocalPlayer then
+    return
+end
 
--- Create UI
+-- Debug: Confirm UI creation
+print("Creating the menu UI...")
+
+-- Create the ScreenGui and parent it to the player's PlayerGui
 local screenGui = Instance.new("ScreenGui")
-local frame = Instance.new("Frame")
-local aimbotButton = Instance.new("TextButton")
-local speedButton = Instance.new("TextButton")
-local toggleButton = Instance.new("TextButton")
-
 screenGui.Parent = game.Players.LocalPlayer.PlayerGui
 screenGui.Name = "ModMenu"
 
+-- Create the Frame that will hold the buttons
+local frame = Instance.new("Frame")
 frame.Parent = screenGui
 frame.Size = UDim2.new(0, 250, 0, 400)
 frame.Position = UDim2.new(0.8, 0, 0.5, 0)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 
--- Aimbot Button
+-- Create the Aimbot button
+local aimbotButton = Instance.new("TextButton")
 aimbotButton.Parent = frame
 aimbotButton.Size = UDim2.new(0, 230, 0, 60)
 aimbotButton.Position = UDim2.new(0, 10, 0, 10)
 aimbotButton.Text = "Toggle Aimbot"
 aimbotButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
--- Speed Boost Button
+-- Create the Speed Boost button
+local speedButton = Instance.new("TextButton")
 speedButton.Parent = frame
 speedButton.Size = UDim2.new(0, 230, 0, 60)
 speedButton.Position = UDim2.new(0, 10, 0, 80)
 speedButton.Text = "Toggle Speed Boost"
 speedButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
--- Toggle Menu Button (For hiding/showing the menu)
+-- Create the Toggle Menu button (for hiding/showing the menu)
+local toggleButton = Instance.new("TextButton")
 toggleButton.Parent = frame
 toggleButton.Size = UDim2.new(0, 230, 0, 60)
 toggleButton.Position = UDim2.new(0, 10, 0, 150)
@@ -45,6 +51,7 @@ local menuVisible = true
 toggleButton.MouseButton1Click:Connect(function()
     menuVisible = not menuVisible
     frame.Visible = menuVisible
+    print("Menu visibility toggled:", menuVisible)  -- Debug message
 end)
 
 -- Aimbot Logic
@@ -73,7 +80,6 @@ local function aimbot()
         if targetPlayer then
             local targetPos = targetPlayer.Character.HumanoidRootPart.Position
             local myPos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
-            local direction = (targetPos - myPos).unit
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(myPos, targetPos)
         end
         wait(0.1)
@@ -86,8 +92,10 @@ aimbotButton.MouseButton1Click:Connect(function()
     if aimbotEnabled then
         aimbotButton.Text = "Aimbot: ON"
         spawn(aimbot) -- Start aimbot in a new thread
+        print("Aimbot enabled")  -- Debug message
     else
         aimbotButton.Text = "Aimbot: OFF"
+        print("Aimbot disabled")  -- Debug message
     end
 end)
 
@@ -114,9 +122,11 @@ speedButton.MouseButton1Click:Connect(function()
     if speedBoostEnabled then
         speedButton.Text = "Speed Boost: ON"
         enableSpeedBoost()
+        print("Speed boost enabled")  -- Debug message
     else
         speedButton.Text = "Speed Boost: OFF"
         disableSpeedBoost()
+        print("Speed boost disabled")  -- Debug message
     end
 end)
 
@@ -131,5 +141,6 @@ end
 -- Start anti-cheat prevention (will keep the script running safely)
 spawn(antiCheat)
 
--- Set UI to visible initially
-frame.Visible = menuVisible
+-- Set initial visibility of the menu to true
+frame.Visible = true
+print("Menu UI created and visible")
