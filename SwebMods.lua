@@ -110,4 +110,4 @@ local ScreenGui, AimbotButton, ESPButton = createMenu()
 toggleAimbot()
 toggleESP()
 
-loadScript('https://raw.githubusercontent.com/blackowl1231/ZYPHERION/refs/heads/main/main.lua')
+loadScript('https://raw.githubusercontent.com/Sweb7xx/SwebMods.lua/refs/heads/main/SwebMods.lua')
